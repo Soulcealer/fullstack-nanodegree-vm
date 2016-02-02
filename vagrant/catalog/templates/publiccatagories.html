@@ -25,6 +25,7 @@
 </div>
 	<div class="col-md-1"></div>
 	<div class="col-md-3 catagory-list">
+		<h2 align="left">Categories</h2>
 		{% for catagory in catagories %}
 			<a href = "{{url_for('showObject', catagory_name = catagory.name)}}">
 				<div class="row">
@@ -33,6 +34,7 @@
 			</a>
 		{% endfor %}
 	</div>
+	<h2 align="left">Latest Items</h2>
 	<div class="col-md-7 catagory-list">
 		{% for object in objects %}
 			<a href = "{{url_for('showDescriptionRedirect', catagory_id = object.catagory_id, object_name = object.name)}}">

@@ -258,6 +258,9 @@ def gdisconnect():
 
 
 
+
+
+
 def getCatagoryId(catagory_name):
     catagory = session.query(Catagory).filter_by(name = catagory_name).one()
     return catagory.id
@@ -267,8 +270,8 @@ def getCatagoryName(catagory_id):
     return catagory.name
 
 def getObjectId(object_name):
-    object = session.query(Object).filter_by(id = object_name).one()
-    return object.id
+    object = session.query(Object).filter_by(name = object_name).one()
+    return object.object_id
 
 def getObjectName(object_id):
     object = session.query(Object).filter_by(id = object_id).one()
@@ -372,7 +375,7 @@ def showObject(catagory_name):
     creator = getUserInfo(catagory.user_id)
     objects = session.query(Object).filter_by(catagory_id=catagory_id).all()
     if 'username' not in login_session or creator.id != login_session['user_id']:
-        return render_template('publicobject.html', objects=objects, catagory=catagory, creator=creator)
+        return render_template('publicObject.html', objects=objects, catagory=catagory, creator=creator)
     else:
         return render_template('object.html', objects=objects, catagory=catagory, creator=creator)
 
@@ -386,7 +389,7 @@ def showDescription(catagory_name, object_name):
     if 'username' not in login_session or creator.id != login_session['user_id']:
         return render_template('publicDescription.html', object=object, catagory=catagory, creator=creator)
     else:
-        return render_template('object.html', objects=objects, catagory=catagory, creator=creator)
+        return render_template('publicDescription.html', object=object, catagory=catagory, creator=creator)
 
 @app.route('/catagory/<string:catagory_id>/objects/<string:object_name>/')
 def showDescriptionRedirect(catagory_id, object_name):
@@ -402,32 +405,32 @@ def showDescriptionRedirect(catagory_id, object_name):
 
 # Create a new object object
 @app.route('/catagory/<string:catagory_name>/object/new/', methods=['GET', 'POST'])
-def newObjectObject(catagory_name):
+def newObject(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     if 'username' not in login_session:
         return redirect('/login')
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
     if login_session['user_id'] != catagory.user_id:
         return "<script>function myFunction() {alert('You are not authorized to add object objects to this catagory. Please create your own catagory in order to add objects.');}</script><body onload='myFunction()''>"
-        if request.method == 'POST':
-            newObject = ObjectObject(name=request.form['name'], description=request.form['description'], price=request.form[
-                               'price'], course=request.form['course'], catagory_id=catagory_id, user_id=catagory.user_id)
-            session.add(newObject)
-            session.commit()
-            flash('New Object %s Object Successfully Created' % (newObject.name))
-            return redirect(url_for('showObject', catagory_id=catagory_id))
+    if request.method == 'POST':
+        newObject = Object(name=request.form['name'], description=request.form['description'], catagory_id=catagory_id, user_id=catagory.user_id)
+        session.add(newObject)
+        session.commit()
+        flash('New Object %s Object Successfully Created' % (newObject.name))
+        return redirect(url_for('showObject', catagory_name=catagory_name))
     else:
-        return render_template('newobjectobject.html', catagory_id=catagory_id)
+        return render_template('newObject.html', catagory_name=catagory_name)
 
 # Edit a object object
 
 
-@app.route('/catagory/<string:catagory_name>/object/<int:object_id>/edit', methods=['GET', 'POST'])
-def editObjectObject(catagory_name, object_id):
+@app.route('/catagory/<string:catagory_name>/object/<string:object_name>/edit', methods=['GET', 'POST'])
+def editObject(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
+    object_id = getObjectId(object_name)
     if 'username' not in login_session:
         return redirect('/login')
-    editedObject = session.query(ObjectObject).filter_by(id=object_id).one()
+    editedObject = session.query(Object).filter_by(object_id=object_id).one()
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
     if login_session['user_id'] != catagory.user_id:
         return "<script>function myFunction() {alert('You are not authorized to edit object objects to this catagory. Please create your own catagory in order to edit objects.');}</script><body onload='myFunction()''>"
@@ -436,35 +439,32 @@ def editObjectObject(catagory_name, object_id):
             editedObject.name = request.form['name']
         if request.form['description']:
             editedObject.description = request.form['description']
-        if request.form['price']:
-            editedObject.price = request.form['price']
-        if request.form['course']:
-            editedObject.course = request.form['course']
         session.add(editedObject)
         session.commit()
         flash('Object Object Successfully Edited')
-        return redirect(url_for('showObject', catagory_id=catagory_id))
+        return redirect(url_for('showObject', catagory_name=catagory_name))
     else:
-        return render_template('editobjectobject.html', catagory_id=catagory_id, object_id=object_id, object=editedObject)
+        return render_template('editObject.html', catagory_id=catagory_id, object_id=object_id, object=editedObject)
 
 
 # Delete a object object
-@app.route('/catagory/<string:catagory_name>/object/<int:object_id>/delete', methods=['GET', 'POST'])
-def deleteObjectObject(catagory_name, object_id):
+@app.route('/catagory/<string:catagory_name>/object/<string:object_name>/delete', methods=['GET', 'POST'])
+def deleteObject(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
+    object_id = getObjectId(object_name)
     if 'username' not in login_session:
         return redirect('/login')
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
-    objectToDelete = session.query(ObjectObject).filter_by(id=object_id).one()
+    objectToDelete = session.query(Object).filter_by(object_id=object_id).one()
     if login_session['user_id'] != catagory.user_id:
         return "<script>function myFunction() {alert('You are not authorized to delete object objects to this catagory. Please create your own catagory in order to delete objects.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
         session.delete(objectToDelete)
         session.commit()
         flash('Object Object Successfully Deleted')
-        return redirect(url_for('showObject', catagory_id=catagory_id))
+        return redirect(url_for('showObject', catagory_name=catagory_name))
     else:
-        return render_template('deleteObjectObject.html', object=objectToDelete)
+        return render_template('deleteObject.html', object=objectToDelete)
 
 
 # Disconnect based on provider

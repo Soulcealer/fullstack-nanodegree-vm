@@ -16,44 +16,48 @@
 		</div>
 	</div>
 
-<div class = 'flash'>
-		      {% with messages = get_flashed_messages() %}
-      {% if messages %}
-          
-        <ul>
-        {% for message in messages %}
-            <li> <strong> {{ message }} </strong> </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-    {% endwith %}
+	<div class = 'flash'>
+			      {% with messages = get_flashed_messages() %}
+	      {% if messages %}
+	          
+	        <ul>
+	        {% for message in messages %}
+	            <li> <strong> {{ message }} </strong> </li>
+	        {% endfor %}
+	        </ul>
+	        {% endif %}
+	    {% endwith %}
 
-</div>
+	</div>
 	
 	<div class="row padding-top padding-bottom">
 		<div class="col-md-1"></div>
-		<div class="col-md-10 padding-none">
+		<div class="col-md-3 padding-none">
 			<a href="{{url_for('newCatagory')}}">
-				<button class="btn btn-default" id="new-catagory">
-					<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Add Catagory
-				</button>
-			</a>
+				<div class="row">
+					<button class="btn btn-default" id="new-catagory">
+						<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Add Catagory
+					</button>
+				</div>
+			</a>			
 		</div>
 		<div class="col-md-1"></div>
 	</div>
 	<div class="col-md-1"></div>
 	<div class="col-md-3 catagory-list">
+		<h2 align="left">Categories</h2>
 		{% for catagory in catagories %}
-			<a href = "{{url_for('showObject', catagory_id = catagory.id)}}">
+			<a href = "{{url_for('showObject', catagory_name = catagory.name)}}">
 				<div class="row">
 					<h3>{{catagory.name}}</h3>
 				</div>			
 			</a>
 		{% endfor %}
-	</div>
+	</div>	
+	<h2 align="left">Latest Items</h2>
 	<div class="col-md-7 catagory-list">
 		{% for object in objects %}
-			<a href = "{{url_for('showDescription', catagory_id = object.catagory_id, object_id = object.object_id)}}">
+			<a href = "{{url_for('showDescriptionRedirect', catagory_id = object.catagory_id, object_name = object.name)}}">
 				<div class="row">
 					<h3>{{object.name}}</h3>
 				</div>
