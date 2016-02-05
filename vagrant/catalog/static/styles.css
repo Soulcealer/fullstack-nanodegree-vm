@@ -58,7 +58,8 @@ h3 {
 	margin: 0;
 	border-color: #9FB80A;
 	border-width: 2px;
-	color: #9FB80A;;
+	color: #9FB80A;
+	background-color: orange;
 }
 .btn:hover {
 	border-color: #9FB80A;
@@ -99,32 +100,32 @@ h3 {
 	background-color: #9FB80A;
 }
 .banner.main {
-	height: 150px;
-	background: url("/static/top-banner.jpg");
+	height: 100px;
+	background-color: blue;
 	background-position: right;
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .banner.menu {
-	height: 150px;
+	height: 100px;
 	background-color: #E1E17F;
 }
 .banner.profile {
-	height: 150px;
+	height: 100px;
 	background-color: #A6E8EB;
 }
 .banner h1 {
-	margin: 45px 0;
+	margin: 25px 0;
 }
- .restaurant-list {
+ .catagory-list {
  	background-color: #F0F0F0;
  	padding: 20px;
 u }
- .restaurant-list:hover {
+ .catagory-list:hover {
  	background-color: #e1e17f;
  	padding: 20px;
 }
-.menu-item {
+.object-item {
 	background: #F0F0F0;
 	padding: 20px;
 	margin: 20px;

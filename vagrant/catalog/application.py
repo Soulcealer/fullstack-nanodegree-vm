@@ -278,7 +278,7 @@ def getObjectName(object_id):
     return object.name
 
 # JSON APIs to view Catagory Information
-@app.route('/catagory/<int:catagory_id>/object/JSON')
+@app.route('/catalog/<int:catagory_id>/object/JSON')
 def catagoryObjectJSON(catagory_id):
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
     objects = session.query(Object).filter_by(
@@ -286,13 +286,13 @@ def catagoryObjectJSON(catagory_id):
     return jsonify(Objects=[i.serialize for i in objects])
 
 
-@app.route('/catagory/<int:catagory_id>/object/<int:object_id>/JSON')
-def objectObjectJSON(catagory_id, object_id):
-    Object_Object = session.query(Object).filter_by(id=object_id).one()
+@app.route('/catalog/<int:catagory_id>/object/<int:object_id>/JSON')
+def objectJSON(catagory_id, object_id):
+    Object = session.query(Object).filter_by(id=object_id).one()
     return jsonify(Object=Object.serialize)
 
 
-@app.route('/catagory/JSON')
+@app.route('/catalog/JSON')
 def catagoriesJSON():
     catagories = session.query(Catagory).all()
     return jsonify(catagories=[r.serialize for r in catagories])
@@ -300,25 +300,29 @@ def catagoriesJSON():
 
 # Show all catagories
 @app.route('/')
-@app.route('/catagory/')
+@app.route('/catalog/')
 def showCatagories():
     catagories = session.query(Catagory).order_by(asc(Catagory.name))
     objects = session.query(Object).order_by(asc(Object.name)).all()
+    object_category_mapping = []
+    for item_object in objects:
+        x = item_object, getCatagoryName(item_object.catagory_id)
+        object_category_mapping.append(x)
+
     if 'username' not in login_session:
-        return render_template('publiccatagories.html', catagories=catagories, objects=objects)
+        return render_template('publiccatagories.html', catagories=catagories, objects=object_category_mapping)
     else:
-        return render_template('catagories.html', catagories=catagories, objects=objects)
+        return render_template('catagories.html', catagories=catagories, objects=object_category_mapping)
 
 # Create a new catagory
 
 
-@app.route('/catagory/new/', methods=['GET', 'POST'])
+@app.route('/catalog/new/', methods=['GET', 'POST'])
 def newCatagory():
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
-        newCatagory = Catagory(
-            name=request.form['name'], user_id=login_session['user_id'])
+        newCatagory = Catagory(name=request.form['name'], user_id=login_session['user_id'])
         session.add(newCatagory)
         flash('New Catagory %s Successfully Created' % newCatagory.name)
         session.commit()
@@ -326,10 +330,26 @@ def newCatagory():
     else:
         return render_template('newCatagory.html')
 
+def newObject(catagory_name):
+    catagory_id = getCatagoryId(catagory_name)
+    if 'username' not in login_session:
+        return redirect('/login')
+    catagory = session.query(Catagory).filter_by(id=catagory_id).one()
+    if login_session['user_id'] != catagory.user_id:
+        return "<script>function myFunction() {alert('You are not authorized to add object objects to this catagory. Please create your own catagory in order to add objects.');}</script><body onload='myFunction()''>"
+    if request.method == 'POST':
+        newObject = Object(name=request.form['name'], description=request.form['description'], catagory_id=catagory_id, user_id=catagory.user_id)
+        session.add(newObject)
+        session.commit()
+        flash('New Object %s Object Successfully Created' % (newObject.name))
+        return redirect(url_for('showObject', catagory_name=catagory_name))
+    else:
+        return render_template('newObject.html', catagory_name=catagory_name)
+
 # Edit a catagory
 
 
-@app.route('/catagory/<string:catagory_name>/edit/', methods=['GET', 'POST'])
+@app.route('/catalog/<string:catagory_name>/edit/', methods=['GET', 'POST'])
 def editCatagory(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     editedCatagory = session.query(
@@ -348,7 +368,7 @@ def editCatagory(catagory_name):
 
 
 # Delete a catagory
-@app.route('/catagory/<string:catagory_name>/delete/', methods=['GET', 'POST'])
+@app.route('/catalog/<string:catagory_name>/delete/', methods=['GET', 'POST'])
 def deleteCatagory(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     catagoryToDelete = session.query(
@@ -367,19 +387,19 @@ def deleteCatagory(catagory_name):
 
 # Show a catagory object
 
-@app.route('/catagory/<string:catagory_name>/')
-@app.route('/catagory/<string:catagory_name>/objects/')
+@app.route('/catalog/<string:catagory_name>/')
+@app.route('/catalog/<string:catagory_name>/items/')
 def showObject(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()    
     creator = getUserInfo(catagory.user_id)
     objects = session.query(Object).filter_by(catagory_id=catagory_id).all()
-    if 'username' not in login_session or creator.id != login_session['user_id']:
+    if 'username' not in login_session:
         return render_template('publicObject.html', objects=objects, catagory=catagory, creator=creator)
     else:
         return render_template('object.html', objects=objects, catagory=catagory, creator=creator)
 
-@app.route('/catagory/<string:catagory_name>/objects/description/<string:object_name>/')
+@app.route('/catalog/<string:catagory_name>/<string:object_name>/')
 def showDescription(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
@@ -391,7 +411,7 @@ def showDescription(catagory_name, object_name):
     else:
         return render_template('publicDescription.html', object=object, catagory=catagory, creator=creator)
 
-@app.route('/catagory/<string:catagory_id>/objects/<string:object_name>/')
+@app.route('/catalog/<string:catagory_id>/<string:object_name>/description')
 def showDescriptionRedirect(catagory_id, object_name):
     catagory_name = getCatagoryName(catagory_id)
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
@@ -400,11 +420,10 @@ def showDescriptionRedirect(catagory_id, object_name):
     if 'username' not in login_session or creator.id != login_session['user_id']:
         return redirect(url_for('showDescription', object_name=object_name, catagory_name=catagory_name))
     else:
-        return render_template('object.html', objects=objects, catagory=catagory, creator=creator)
-
+        return redirect(url_for('showDescription', object_name=object_name, catagory_name=catagory_name))
 
 # Create a new object object
-@app.route('/catagory/<string:catagory_name>/object/new/', methods=['GET', 'POST'])
+@app.route('/catalog/<string:catagory_name>/object/new/', methods=['GET', 'POST'])
 def newObject(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     if 'username' not in login_session:
@@ -424,7 +443,7 @@ def newObject(catagory_name):
 # Edit a object object
 
 
-@app.route('/catagory/<string:catagory_name>/object/<string:object_name>/edit', methods=['GET', 'POST'])
+@app.route('/catalog/<string:catagory_name>/object/<string:object_name>/edit', methods=['GET', 'POST'])
 def editObject(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
     object_id = getObjectId(object_name)
@@ -448,7 +467,7 @@ def editObject(catagory_name, object_name):
 
 
 # Delete a object object
-@app.route('/catagory/<string:catagory_name>/object/<string:object_name>/delete', methods=['GET', 'POST'])
+@app.route('/catalog/<string:catagory_name>/object/<string:object_name>/delete', methods=['GET', 'POST'])
 def deleteObject(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
     object_id = getObjectId(object_name)

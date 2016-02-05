@@ -1,15 +1,17 @@
 <div class="row top-object">
-	<div class="col-md-6">
-		<a href="{{url_for('showCatagories')}}">
-			<span class="glyphicon glyphicon-home" aria-hidden="true"></span>Show All Catagorys
-		</a>
-	</div>
-	<div class="col-md-6 text-right">
-					{%if 'username' not in session %}
-			<a href="{{url_for('showLogin')}}">Click Here to Login </a>
+	<div class="row banner main blue">
+		<div class="col-md-1"></div>
+		<div class="col-md-9 padding-none">
+			<a href="{{url_for('showCatagories')}}">
+				<h1><font color="white">Catalog App</font></h1>
+			</a>
+		</div>
+		<div class="col-md-2 text-right">
+			{%if 'username' not in session %}
+				<a href="{{url_for('showLogin')}}" class=btn><font color="white">Login</font></a>
 			{% else %}
-			<a href="{{url_for('disconnect')}}">Logout </a>
+				<a href="{{url_for('showLogin')}}" class=btn><font color="white">Logout</font></a>
 			{% endif %}
-		
+		</div>
 	</div>
 </div>
