@@ -260,36 +260,41 @@ def gdisconnect():
 
 
 
-
+# Return the catagory Id given the catagory name
 def getCatagoryId(catagory_name):
     catagory = session.query(Catagory).filter_by(name = catagory_name).one()
     return catagory.id
 
+# Return the catagory name given the catagory id
 def getCatagoryName(catagory_id):
     catagory = session.query(Catagory).filter_by(id = catagory_id).one()
     return catagory.name
 
+# Return the object Id given the object name
 def getObjectId(object_name):
     object = session.query(Object).filter_by(name = object_name).one()
     return object.object_id
 
+# Return the object name given the object id
 def getObjectName(object_id):
     object = session.query(Object).filter_by(id = object_id).one()
     return object.name
 
 # JSON APIs to view Catagory Information
-@app.route('/catalog/<int:catagory_id>/object/JSON')
-def catagoryObjectJSON(catagory_id):
+@app.route('/catalog/<string:catagory_name>/items/JSON')
+def catagoryObjectJSON(catagory_name):
+    catagory_id = getCatagoryId(catagory_name)
     catagory = session.query(Catagory).filter_by(id=catagory_id).one()
     objects = session.query(Object).filter_by(
         catagory_id=catagory_id).all()
     return jsonify(Objects=[i.serialize for i in objects])
 
 
-@app.route('/catalog/<int:catagory_id>/object/<int:object_id>/JSON')
-def objectJSON(catagory_id, object_id):
-    Object = session.query(Object).filter_by(id=object_id).one()
-    return jsonify(Object=Object.serialize)
+@app.route('/catalog/<string:catagory_name>/<string:object_name>/JSON')
+def objectJSON(catagory_name, object_name):
+    object_id = getObjectId(object_name)
+    object = session.query(Object).filter_by(object_id=object_id).one()
+    return jsonify(Object=object.serialize)
 
 
 @app.route('/catalog/JSON')
@@ -315,8 +320,6 @@ def showCatagories():
         return render_template('catagories.html', catagories=catagories, objects=object_category_mapping)
 
 # Create a new catagory
-
-
 @app.route('/catalog/new/', methods=['GET', 'POST'])
 def newCatagory():
     if 'username' not in login_session:
@@ -330,6 +333,7 @@ def newCatagory():
     else:
         return render_template('newCatagory.html')
 
+# Create a new item for a catagory
 def newObject(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
     if 'username' not in login_session:
@@ -347,8 +351,7 @@ def newObject(catagory_name):
         return render_template('newObject.html', catagory_name=catagory_name)
 
 # Edit a catagory
-
-
+'''
 @app.route('/catalog/<string:catagory_name>/edit/', methods=['GET', 'POST'])
 def editCatagory(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
@@ -365,7 +368,7 @@ def editCatagory(catagory_name):
             return redirect(url_for('showCatagories'))
     else:
         return render_template('editCatagory.html', catagory=editedCatagory)
-
+'''
 
 # Delete a catagory
 @app.route('/catalog/<string:catagory_name>/delete/', methods=['GET', 'POST'])
@@ -385,8 +388,7 @@ def deleteCatagory(catagory_name):
     else:
         return render_template('deleteCatagory.html', catagory=catagoryToDelete)
 
-# Show a catagory object
-
+# Show a catagory's object
 @app.route('/catalog/<string:catagory_name>/')
 @app.route('/catalog/<string:catagory_name>/items/')
 def showObject(catagory_name):
@@ -399,6 +401,7 @@ def showObject(catagory_name):
     else:
         return render_template('object.html', objects=objects, catagory=catagory, creator=creator)
 
+# Displays the description of the item
 @app.route('/catalog/<string:catagory_name>/<string:object_name>/')
 def showDescription(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)
@@ -411,6 +414,7 @@ def showDescription(catagory_name, object_name):
     else:
         return render_template('publicDescription.html', object=object, catagory=catagory, creator=creator)
 
+# Redirects the URL to the description page from the front page
 @app.route('/catalog/<string:catagory_id>/<string:object_name>/description')
 def showDescriptionRedirect(catagory_id, object_name):
     catagory_name = getCatagoryName(catagory_id)
@@ -441,8 +445,6 @@ def newObject(catagory_name):
         return render_template('newObject.html', catagory_name=catagory_name)
 
 # Edit a object object
-
-
 @app.route('/catalog/<string:catagory_name>/object/<string:object_name>/edit', methods=['GET', 'POST'])
 def editObject(catagory_name, object_name):
     catagory_id = getCatagoryId(catagory_name)

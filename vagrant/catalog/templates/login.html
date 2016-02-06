@@ -50,7 +50,7 @@ function signInCallback(authResult) {
         if (result) {
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
          setTimeout(function() {
-          window.location.href = "/catagory";
+          window.location.href = "/catalog";
          }, 4000);
           
       } else if (authResult['error']) {
@@ -105,7 +105,7 @@ function signInCallback(authResult) {
         if (result) {
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
          setTimeout(function() {
-          window.location.href = "/catagory";
+          window.location.href = "/catalog";
          }, 4000);
           
       } else {
