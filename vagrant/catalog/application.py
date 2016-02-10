@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
+#from flask.ext.seasurf import SeaSurf
 from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from catalog_setup import Base, Catagory, Object, User
@@ -14,6 +15,8 @@ from flask import make_response
 import requests
 
 app = Flask(__name__)
+#csrf = SeaSurf(app)
+
 @app.route('/hello')
 def hello():
    return 'Hello, world!'
@@ -374,6 +377,7 @@ def editCatagory(catagory_name):
 @app.route('/catalog/<string:catagory_name>/delete/', methods=['GET', 'POST'])
 def deleteCatagory(catagory_name):
     catagory_id = getCatagoryId(catagory_name)
+    objectsToDelete = session.query(Object).filter_by(catagory_id=catagory_id).all()
     catagoryToDelete = session.query(
         Catagory).filter_by(id=catagory_id).one()
     if 'username' not in login_session:
@@ -381,6 +385,8 @@ def deleteCatagory(catagory_name):
     if catagoryToDelete.user_id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not authorized to delete this catagory. Please create your own catagory in order to delete.');}</script><body onload='myFunction()''>"
     if request.method == 'POST':
+        for objects in objectsToDelete:
+            session.delete(objects)
         session.delete(catagoryToDelete)
         flash('%s Successfully Deleted' % catagoryToDelete.name)
         session.commit()
